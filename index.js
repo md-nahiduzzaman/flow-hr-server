@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, Timestamp } = require("mongodb");
 
 // config
 require("dotenv").config();
@@ -28,6 +28,29 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    // collections
+    const usersCollection = client.db("flowHr").collection("users");
+
+    // save a user data in db
+    app.put("/user", async (req, res) => {
+      const user = req.body;
+
+      const query = { email: user?.email };
+
+      // if user already in db
+      const isExist = await usersCollection.findOne(query);
+
+      // save user for the first time
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...user,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
