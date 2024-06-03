@@ -51,6 +51,12 @@ async function run() {
       res.send(result);
     });
 
+    // get all users data from db
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
