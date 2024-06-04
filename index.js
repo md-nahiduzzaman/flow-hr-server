@@ -66,11 +66,15 @@ async function run() {
       if (verified === "true") {
         filter.verified = true;
       }
-      // else {
-      //   filter.verified = false;
-      // }
-
       const result = await usersCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    // get all users data by email from db
+    app.get("/users-details/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
       res.send(result);
     });
 
