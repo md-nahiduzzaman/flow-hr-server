@@ -172,7 +172,22 @@ async function run() {
 
     // get all work in db
     app.get("/all-works", async (req, res) => {
-      const result = await worksCollection.find().toArray();
+      const name = req.query.name;
+      // const month = new Date(req.query.month).getMonth();
+      const month = req.query.month;
+      console.log(month);
+
+      let query = {};
+      if (name) {
+        query.name = name;
+      }
+      if (month) {
+        query.month = month;
+      }
+      console.log(query.month);
+
+      const result = await worksCollection.find(query).toArray();
+
       res.send(result);
     });
 
