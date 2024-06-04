@@ -162,11 +162,17 @@ async function run() {
       res.send(result);
     });
 
-    // get work in db
+    // get work by email db
     app.get("/work-sheet/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
       const result = await worksCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // get all work in db
+    app.get("/all-works", async (req, res) => {
+      const result = await worksCollection.find().toArray();
       res.send(result);
     });
 
