@@ -36,6 +36,7 @@ async function run() {
     // collections
     const usersCollection = client.db("flowHr").collection("users");
     const messagesCollection = client.db("flowHr").collection("messages");
+    const worksCollection = client.db("flowHr").collection("works");
 
     // save a user data in db
     app.put("/user", async (req, res) => {
@@ -64,9 +65,11 @@ async function run() {
       let filter = {};
       if (verified === "true") {
         filter.verified = true;
-      } else {
-        filter.verified = false;
       }
+      // else {
+      //   filter.verified = false;
+      // }
+
       const result = await usersCollection.find(filter).toArray();
       res.send(result);
     });
@@ -119,6 +122,22 @@ async function run() {
       res.send(result);
     });
 
+    // update user verified
+    app.put("/user-verified/:id", async (req, res) => {
+      const id = req.params.id;
+      const verifiedData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...verifiedData,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, options);
+      console.log(result);
+      res.send(result);
+    });
+
     // save messages in db
     app.put("/messages", async (req, res) => {
       const message = req.body;
@@ -129,6 +148,21 @@ async function run() {
     // get messages from db
     app.get("/messages", async (req, res) => {
       const result = await messagesCollection.find().toArray();
+      res.send(result);
+    });
+
+    // save work in db
+    app.put("/work-sheet", async (req, res) => {
+      const workData = req.body;
+      const result = await worksCollection.insertOne(workData);
+      res.send(result);
+    });
+
+    // get work in db
+    app.get("/work-sheet/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const result = await worksCollection.find(query).toArray();
       res.send(result);
     });
 
