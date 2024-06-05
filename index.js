@@ -10,6 +10,7 @@ const {
 // config
 require("dotenv").config();
 const app = express();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -37,6 +38,26 @@ async function run() {
     const usersCollection = client.db("flowHr").collection("users");
     const messagesCollection = client.db("flowHr").collection("messages");
     const worksCollection = client.db("flowHr").collection("works");
+    const paymentsCollection = client.db("flowHr").collection("payments");
+
+    // create-payment-intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const salary = req.body.salary;
+      const salaryInCent = parseFloat(salary) * 100;
+      console.log(salaryInCent);
+      if (!salary || salaryInCent < 1) return;
+      // generate clientSecret
+      const { client_secret } = await stripe.paymentIntents.create({
+        amount: salaryInCent,
+        currency: "usd",
+        // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+      // send client secret as response
+      res.send({ clientSecret: client_secret });
+    });
 
     // save a user data in db
     app.put("/user", async (req, res) => {
@@ -188,6 +209,13 @@ async function run() {
 
       const result = await worksCollection.find(query).toArray();
 
+      res.send(result);
+    });
+
+    // save payment history
+    app.post("/payments", async (req, res) => {
+      const paymentData = req.body;
+      const result = await paymentsCollection.insertOne(paymentData);
       res.send(result);
     });
 
