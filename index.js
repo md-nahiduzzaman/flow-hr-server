@@ -219,6 +219,30 @@ async function run() {
       res.send(result);
     });
 
+    // get payment history
+    app.get("/payments", async (req, res) => {
+      // const sortOptions = { month: 1 };
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      console.log(page, size);
+      const skip = (page - 1) * size;
+
+      const result = await paymentsCollection
+        .find()
+        .sort({ month: 1 })
+        .skip(skip)
+        .limit(size)
+        .toArray();
+      res.send(result);
+    });
+
+    // get payment count
+    app.get("/payments-count", async (req, res) => {
+      const count = await paymentsCollection.estimatedDocumentCount();
+      res.send({ count });
+      console.log(count);
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
