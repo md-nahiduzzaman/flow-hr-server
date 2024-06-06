@@ -135,6 +135,29 @@ async function run() {
       res.send(result);
     });
 
+    // get single user details
+    app.get("/users-details/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
+
+    // update single user details
+    app.put("/update-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const user = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...user,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
     // get all users data from db
     app.get("/users", async (req, res) => {
       const { verified } = req.query;
