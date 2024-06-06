@@ -99,12 +99,7 @@ async function run() {
       // if user already in db
       const isExist = await usersCollection.findOne(query);
 
-      // fired user
-      // if (isExist) {
-      //   if (user.status === '"fired"') {
-      //     return res.status(401).send({ message: "unauthorized access!!" });
-      //   }
-      // }
+      //
 
       // save user for the first time
       const options = { upsert: true };
@@ -138,7 +133,15 @@ async function run() {
     // get single user details
     app.get("/users-details/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
+      const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
+
+    // get single user
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
       const result = await usersCollection.findOne({ email });
       res.send(result);
     });
@@ -303,11 +306,14 @@ async function run() {
       // const sortOptions = { month: 1 };
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
+      const email = req.query.email;
+      const query = { email };
       console.log(page, size);
+
       const skip = (page - 1) * size;
 
       const result = await paymentsCollection
-        .find()
+        .find(query)
         .sort({ month: 1 })
         .skip(skip)
         .limit(size)
@@ -317,7 +323,9 @@ async function run() {
 
     // get payment count
     app.get("/payments-count", async (req, res) => {
-      const count = await paymentsCollection.estimatedDocumentCount();
+      const filter = req.query.filter;
+      const query = { email: filter };
+      const count = await paymentsCollection.countDocuments(query);
       res.send({ count });
       console.log(count);
     });
