@@ -43,6 +43,7 @@ async function run() {
     const messagesCollection = client.db("flowHr").collection("messages");
     const worksCollection = client.db("flowHr").collection("works");
     const paymentsCollection = client.db("flowHr").collection("payments");
+    const blocksCollection = client.db("flowHr").collection("blocks");
 
     // jwt generator
     app.post("/jwt", async (req, res) => {
@@ -99,11 +100,11 @@ async function run() {
       const isExist = await usersCollection.findOne(query);
 
       // fired user
-      if (isExist) {
-        if (user.status === '"fired"') {
-          return res.status(401).send({ message: "unauthorized access!!" });
-        }
-      }
+      // if (isExist) {
+      //   if (user.status === '"fired"') {
+      //     return res.status(401).send({ message: "unauthorized access!!" });
+      //   }
+      // }
 
       // save user for the first time
       const options = { upsert: true };
@@ -113,6 +114,24 @@ async function run() {
         },
       };
       const result = await usersCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
+    // save block user
+    app.put("/block-user", async (req, res) => {
+      const email = req.body;
+      console.log(email);
+
+      const result = await blocksCollection.insertOne(email);
+      res.send(result);
+    });
+
+    // get block user
+    app.get("/block-user/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+
+      const result = await blocksCollection.findOne({ email });
       res.send(result);
     });
 
