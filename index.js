@@ -25,6 +25,23 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// verify jwt token middleware
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) return res.status(401).send({ message: "Unauthorized Access" });
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send({ message: "Unauthorized Access" });
+      }
+      console.log(decoded);
+      req.user = decoded;
+      next();
+    });
+  }
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.w5tdn25.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -44,6 +61,28 @@ async function run() {
     const worksCollection = client.db("flowHr").collection("works");
     const paymentsCollection = client.db("flowHr").collection("payments");
     const blocksCollection = client.db("flowHr").collection("blocks");
+
+    // verify admin middleware
+    const verifyAdmin = async (req, res, next) => {
+      const user = req.user;
+      const query = { email: user?.email };
+      const result = await usersCollection.findOne(query);
+      console.log(result?.role);
+      if (!result || result?.role !== "Admin")
+        return res.status(401).send({ message: "Unauthorized Access!!" });
+      next();
+    };
+
+    // verify hr middleware
+    const verifyHr = async (req, res, next) => {
+      const user = req.user;
+      const query = { email: user?.email };
+      const result = await usersCollection.findOne(query);
+      console.log(result?.role);
+      if (!result || result?.role !== "HR")
+        return res.status(401).send({ message: "Unauthorized Access!!" });
+      next();
+    };
 
     // jwt generator
     app.post("/jwt", async (req, res) => {
