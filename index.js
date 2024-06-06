@@ -299,6 +299,15 @@ async function run() {
       console.log(count);
     });
 
+    // get payment by email
+    app.get("/payment-details/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      console.log(query);
+      const result = await paymentsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
