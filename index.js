@@ -200,8 +200,23 @@ async function run() {
       res.send(result);
     });
 
+    // hr
     // get all users data from db
     app.get("/users", async (req, res) => {
+      // const { verified } = req.query;
+      // admin filter
+      // let filter = {};
+      // if (verified === "true") {
+      //   filter.verified = true;
+      // }
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    // ------------------------------- Admin start
+
+    // get all verified users data from db
+    app.get("/users-verified", verifyToken, verifyAdmin, async (req, res) => {
       const { verified } = req.query;
       // admin filter
       let filter = {};
@@ -212,16 +227,8 @@ async function run() {
       res.send(result);
     });
 
-    // get all users data by email from db
-    app.get("/users-details/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const result = await usersCollection.findOne(query);
-      res.send(result);
-    });
-
     // update user salary
-    app.put("/user-salary/:id", async (req, res) => {
+    app.put("/user-salary/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const salaryData = req.body;
       const query = { _id: new ObjectId(id) };
@@ -237,7 +244,7 @@ async function run() {
     });
 
     // update user role
-    app.put("/user-role/:id", async (req, res) => {
+    app.put("/user-role/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const roleData = req.body;
       const query = { _id: new ObjectId(id) };
@@ -253,7 +260,7 @@ async function run() {
     });
 
     // update user status fired
-    app.put("/user-status/:id", async (req, res) => {
+    app.put("/user-status/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const statusData = req.body;
       const query = { _id: new ObjectId(id) };
@@ -265,6 +272,16 @@ async function run() {
       };
       const result = await usersCollection.updateOne(query, updateDoc, options);
       console.log(result);
+      res.send(result);
+    });
+
+    // -------------------------- Admin End
+
+    // get all users data by email from db
+    app.get("/users-details/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
       res.send(result);
     });
 
