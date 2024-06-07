@@ -61,6 +61,9 @@ async function run() {
     const worksCollection = client.db("flowHr").collection("works");
     const paymentsCollection = client.db("flowHr").collection("payments");
     const blocksCollection = client.db("flowHr").collection("blocks");
+    const testimonialsCollection = client
+      .db("flowHr")
+      .collection("testimonials");
 
     // verify admin middleware
     const verifyAdmin = async (req, res, next) => {
@@ -407,6 +410,12 @@ async function run() {
       const query = { email };
       console.log(query);
       const result = await paymentsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // get testimonials data
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection.find().toArray();
       res.send(result);
     });
 
