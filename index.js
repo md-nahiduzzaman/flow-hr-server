@@ -75,6 +75,7 @@ async function run() {
 
     // verify hr middleware
     const verifyHr = async (req, res, next) => {
+      console.log("helloooo");
       const user = req.user;
       const query = { email: user?.email };
       const result = await usersCollection.findOne(query);
@@ -137,6 +138,9 @@ async function run() {
 
       // if user already in db
       const isExist = await usersCollection.findOne(query);
+      if (isExist) {
+        return res.send(isExist);
+      }
 
       //
 
@@ -213,10 +217,44 @@ async function run() {
       res.send(result);
     });
 
+    // --------------------------- HR Start
+
+    // update user verified status
+    app.put(
+      "/user-verified-status/:id",
+      verifyToken,
+      verifyHr,
+      async (req, res) => {
+        const id = req.params.id;
+        const verifiedData = req.body;
+        const query = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            ...verifiedData,
+          },
+        };
+        const result = await usersCollection.updateOne(
+          query,
+          updateDoc,
+          options
+        );
+        console.log(result);
+        res.send(result);
+      }
+    );
+
+    // save payment history
+    app.post("/payments", verifyToken, verifyHr, async (req, res) => {
+      const paymentData = req.body;
+      const result = await paymentsCollection.insertOne(paymentData);
+      res.send(result);
+    });
+
     // ------------------------------- Admin start
 
     // get all verified users data from db
-    app.get("/users-verified", verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/users-verified", async (req, res) => {
       const { verified } = req.query;
       // admin filter
       let filter = {};
@@ -285,22 +323,6 @@ async function run() {
       res.send(result);
     });
 
-    // update user verified
-    app.put("/user-verified/:id", async (req, res) => {
-      const id = req.params.id;
-      const verifiedData = req.body;
-      const query = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: {
-          ...verifiedData,
-        },
-      };
-      const result = await usersCollection.updateOne(query, updateDoc, options);
-      console.log(result);
-      res.send(result);
-    });
-
     // save messages in db
     app.put("/messages", async (req, res) => {
       const message = req.body;
@@ -347,13 +369,6 @@ async function run() {
 
       const result = await worksCollection.find(query).toArray();
 
-      res.send(result);
-    });
-
-    // save payment history
-    app.post("/payments", async (req, res) => {
-      const paymentData = req.body;
-      const result = await paymentsCollection.insertOne(paymentData);
       res.send(result);
     });
 
