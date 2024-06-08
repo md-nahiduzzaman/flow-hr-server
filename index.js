@@ -326,6 +326,7 @@ async function run() {
       res.send(result);
     });
 
+    // -------------- message start
     // save messages in db
     app.put("/messages", async (req, res) => {
       const message = req.body;
@@ -338,6 +339,7 @@ async function run() {
       const result = await messagesCollection.find().toArray();
       res.send(result);
     });
+    // --------------- message end
 
     // save work in db
     app.put("/work-sheet", async (req, res) => {
