@@ -83,12 +83,24 @@ async function run() {
 
     // verify hr middleware
     const verifyHr = async (req, res, next) => {
-      console.log("helloooo");
+      console.log("hr middleware");
       const user = req.user;
       const query = { email: user?.email };
       const result = await usersCollection.findOne(query);
       console.log(result?.role);
       if (!result || result?.role !== "HR")
+        return res.status(401).send({ message: "Unauthorized Access!!" });
+      next();
+    };
+
+    // verify Employee middleware
+    const verifyEmployee = async (req, res, next) => {
+      console.log("Employee middleware");
+      const user = req.user;
+      const query = { email: user?.email };
+      const result = await usersCollection.findOne(query);
+      console.log(result?.role);
+      if (!result || result?.role !== "Employee")
         return res.status(401).send({ message: "Unauthorized Access!!" });
       next();
     };
@@ -346,8 +358,9 @@ async function run() {
     });
     // --------------- message end
 
+    // ----------------- Employee start
     // save work in db
-    app.put("/work-sheet", async (req, res) => {
+    app.put("/work-sheet", verifyToken, verifyEmployee, async (req, res) => {
       const workData = req.body;
       const result = await worksCollection.insertOne(workData);
       res.send(result);
@@ -361,6 +374,7 @@ async function run() {
       res.send(result);
     });
 
+    // ------------------- Employee end
     // get all work in db
     app.get("/all-works", async (req, res) => {
       const name = req.query.name;
